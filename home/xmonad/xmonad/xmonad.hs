@@ -9,12 +9,16 @@ import XMonad.Actions.SpawnOn
 import XMonad.Prompt
 import XMonad.Actions.Navigation2D
 import XMonad.Util.NamedScratchpad
+import XMonad.Layout.Grid
 import Data.Time
+
+
+-- myLayout = Tall ||| Full ||| Mirror Tall;
 
 
 
 myTopics = ["main", "browser"]
-myWorkspaces = myTopics ++ (drop (length myTopics) (map show [1..12]))
+myWorkspaces = myTopics ++ (drop (length myTopics) (map show [1..10]))
 
 myTopicConfig = defaultTopicConfig 
     { defaultTopicAction = const (return ())
@@ -28,13 +32,16 @@ toggleStrutsKey XConfig {XMonad.modMask = modMask} = (modMask, xK_b)
 
 scratchpads = 
     [ NS "zeal" "zeal" (title =? "Zeal") defaultFloating 
-    , NS "sage" "xterm -title sage sage" (title =? "sage") defaultFloating
+    , NS "sage" "xterm -T sc-sage sage" (title =? "sc-sage") defaultFloating
+    , NS "ipython2" "xterm -T sc-ipython2 ipython2" (title =? "sc-ipython2") defaultFloating
+    , NS "ydcv" "xterm -T sc-ydcv ydcv" (title =? "sc-ydcv") defaultFloating
+    , NS "xterm" "xterm -T sc-xterm sh" (title =? "sc-xterm") defaultFloating
     ]
 
 
 myKeys = \c -> mkKeymap c $
     [ ("M-" ++ m ++ [k], f i) | 
-            (i, k) <- zip myWorkspaces "1234567890-=", 
+            (i, k) <- zip myWorkspaces "1234567890", 
             (f, m) <- [ (switchTopic myTopicConfig, ""), (windows . W.shift, "S-")]
     ] ++ 
     [ ("M-<Return>", spawnHere $ XMonad.terminal c)
@@ -51,9 +58,14 @@ myKeys = \c -> mkKeymap c $
     , ("<XF86AudioMute>", spawn "ponymix toggle")
     , ("M-; z", namedScratchpadAction scratchpads "zeal")
     , ("M-; s", namedScratchpadAction scratchpads "sage")
+    , ("M-; d", namedScratchpadAction scratchpads "ydcv")
+    , ("M-; x", namedScratchpadAction scratchpads "xterm")
+    , ("M-; p", namedScratchpadAction scratchpads "ipython2")
     , ("M-<Space>", sendMessage NextLayout)
     , ("<Print>", spawnHere "sleep 0.1; scrot -s -e 'mkdir -p /tmp/scrot/; mv $f /tmp/scrot/'")
     , ("S-<Print>", spawnHere "scrot -e 'mkdir -p /tmp/scrot/; mv $f /tmp/scrot/'")
+    , ("M--", sendMessage Shrink)
+    , ("M-=", sendMessage Expand)
     ]
 
 myManageHook = composeAll $ [manageDocks, namedScratchpadManageHook scratchpads]
@@ -68,5 +80,4 @@ main = do
             , keys = myKeys
             , layoutHook = avoidStruts $ layoutHook defaultConfig
             , manageHook = myManageHook
-            , logHook = dynamicLogWithPP . namedScratchpadFilterOutWorkspacePP $ defaultPP
             })
