@@ -10,6 +10,7 @@ import XMonad.Prompt
 import XMonad.Actions.Navigation2D
 import XMonad.Util.NamedScratchpad
 import XMonad.Layout.Grid
+import XMonad.Layout.NoBorders
 import Data.Time
 
 
@@ -73,11 +74,11 @@ myManageHook = composeAll $ [manageDocks, namedScratchpadManageHook scratchpads]
 main = do
     xmonad =<< statusBar "xmobar" defaultPP toggleStrutsKey (
             defaultConfig
-            { terminal = "xterm"
+            { terminal = "konsole"
             , modMask = mod4Mask
             , borderWidth = 2
             , workspaces = myWorkspaces
             , keys = myKeys
-            , layoutHook = avoidStruts $ layoutHook defaultConfig
+            , layoutHook = smartBorders $ avoidStruts $ layoutHook defaultConfig
             , manageHook = myManageHook
             })
