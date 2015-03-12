@@ -31,10 +31,12 @@ NeoBundle 'Shougo/neosnippet-snippets'
 NeoBundle 'tpope/vim-fugitive'
 NeoBundle 'ctrlpvim/ctrlp.vim'
 NeoBundle 'flazz/vim-colorschemes'
-NeoBundle 'Shougo/vimproc.vim'
+NeoBundle 'Shougo/vimproc.vim', { 'build' : { 'unix' : 'make -f make_unix.mak', }, }
 NeoBundle 'Shougo/vimshell'
 NeoBundle 'Shougo/neocomplete'
 NeoBundle 'jimenezrick/vimerl'
+NeoBundle 'bling/vim-airline'
+NeoBundle 'luochen1990/rainbow'
 
 " Required:
 call neobundle#end()
@@ -54,12 +56,12 @@ inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
 inoremap <expr><C-g>     neocomplete#undo_completion()
 
 
-
-
 " Neo snippets settings
 imap <C-k>     <Plug>(neosnippet_expand_or_jump)
 smap <C-k>     <Plug>(neosnippet_expand_or_jump)
 xmap <C-k>     <Plug>(neosnippet_expand_target)
+
+
 " SuperTab like snippets behavior.
 imap <expr><TAB> neosnippet#expandable_or_jumpable() ?
 \ "\<Plug>(neosnippet_expand_or_jump)"
@@ -67,3 +69,17 @@ imap <expr><TAB> neosnippet#expandable_or_jumpable() ?
 smap <expr><TAB> neosnippet#expandable_or_jumpable() ?
 \ "\<Plug>(neosnippet_expand_or_jump)"
 \: "\<TAB>"
+
+
+" Airline Conf
+set laststatus=2
+let g:airline_powerline_fonts = 1
+let g:airline_theme = 'powerlineish'
+
+
+" Rainbow (Paratheneses highlight
+let g:rainbow_active = 1 
+
+
+" General Settings
+set expandtab

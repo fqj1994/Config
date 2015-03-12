@@ -3,6 +3,8 @@ neobundle.vim
 neocomplete
 neosnippet-snippets
 neosnippet.vim
+rainbow
+vim-airline
 vim-colorschemes
 vim-fugitive
 vimerl
