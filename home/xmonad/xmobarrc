@@ -1,10 +1,10 @@
 Config { font = "xft:Dejavu Sans:size=8,Source Han Sans TC:size=8"
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader% | %sound% }{ %journalctl%  |  %date%"
+       , template = "%StdinReader% | %sound% | %bat% }{  %date%"
        , commands = [ Run Date "%a %_d %b %I:%M %p" "date" 10
                     , Run StdinReader
-                    , Run Com "bash" ["-c", "ponymix | grep Volume | head -n 1 | cut -d: -f2"] "sound" 1
-                    , Run Com "bash" ["-c", "journalctl -n 1 | tail -n 1"] "journalctl" 5
+                    , Run Com "/bin/bash" ["-c", "ponymix | grep Volume | head -n 1 | cut -d: -f2 | sed -e 's/ //g'"] "sound" 1
+                    , Run Com "/bin/bash" ["-c", "cat /sys/class/power_supply/BAT0/capacity"] "bat" 1
                     ]
 }

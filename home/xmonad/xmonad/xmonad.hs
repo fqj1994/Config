@@ -5,12 +5,15 @@ import XMonad.Util.EZConfig
 import XMonad.Actions.TopicSpace
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.ManageHelpers
 import XMonad.Actions.SpawnOn
 import XMonad.Prompt
+import XMonad.Prompt.Window
 import XMonad.Actions.Navigation2D
 import XMonad.Util.NamedScratchpad
 import XMonad.Layout.Grid
 import XMonad.Layout.NoBorders
+import XMonad.Hooks.SetWMName
 import Data.Time
 
 
@@ -25,7 +28,7 @@ myTopicConfig = defaultTopicConfig
     { defaultTopicAction = const (return ())
     , defaultTopic = "main"
     , topicActions = M.fromList $
-        [ ("browser", spawnHere "google-chrome-unstable")
+        [ ("browser", spawnHere "google-chrome-stable")
         ]
     }
 
@@ -36,7 +39,7 @@ scratchpads =
     , NS "sage" "xterm -T sc-sage sage" (title =? "sc-sage") defaultFloating
     , NS "ipython2" "xterm -T sc-ipython2 ipython2" (title =? "sc-ipython2") defaultFloating
     , NS "ydcv" "xterm -T sc-ydcv ydcv" (title =? "sc-ydcv") defaultFloating
-    , NS "xterm" "xterm -T sc-xterm sh" (title =? "sc-xterm") defaultFloating
+    , NS "terminal" "konsole --profile KSPad" (title =? "KSPad") defaultFloating
     ]
 
 
@@ -47,6 +50,8 @@ myKeys = \c -> mkKeymap c $
     ] ++ 
     [ ("M-<Return>", spawnHere $ XMonad.terminal c)
     , ("M-r", shellPromptHere defaultXPConfig)
+    , ("M-g", windowPromptGoto defaultXPConfig)
+    , ("M-S-g", windowPromptBring defaultXPConfig)
     , ("M-t", withFocused $ windows . W.sink)
     , ("M-q", kill)
     , ("M-h", windowGo L False)
@@ -60,16 +65,23 @@ myKeys = \c -> mkKeymap c $
     , ("M-; z", namedScratchpadAction scratchpads "zeal")
     , ("M-; s", namedScratchpadAction scratchpads "sage")
     , ("M-; d", namedScratchpadAction scratchpads "ydcv")
-    , ("M-; x", namedScratchpadAction scratchpads "xterm")
+    , ("M-; x", namedScratchpadAction scratchpads "terminal")
     , ("M-; p", namedScratchpadAction scratchpads "ipython2")
     , ("M-<Space>", sendMessage NextLayout)
     , ("<Print>", spawnHere "sleep 0.1; scrot -s -e 'mkdir -p /tmp/scrot/; mv $f /tmp/scrot/'")
     , ("S-<Print>", spawnHere "scrot -e 'mkdir -p /tmp/scrot/; mv $f /tmp/scrot/'")
     , ("M--", sendMessage Shrink)
     , ("M-=", sendMessage Expand)
+    , ("M-c", spawnHere "xclip -selection primary -o | xclip -selection clipboard -i")
+    , ("M-v", spawnHere "sleep 0.5; xdotool type \"$(xclip -selection clipboard -o)\"")
     ]
 
-myManageHook = composeAll $ [manageDocks, namedScratchpadManageHook scratchpads]
+myManageHook = composeAll $ [manageDocks
+                            ,namedScratchpadManageHook scratchpads
+                            ,isFullscreen --> doFullFloat
+                            ,role =? "popup" --> doFloat
+                            ]
+                where [role, name] = [stringProperty "WM_WINDOW_ROLE", stringProperty "WM_NAME"]
 
 main = do
     xmonad =<< statusBar "xmobar" defaultPP toggleStrutsKey (
@@ -81,4 +93,5 @@ main = do
             , keys = myKeys
             , layoutHook = smartBorders $ avoidStruts $ layoutHook defaultConfig
             , manageHook = myManageHook
+            , startupHook = setWMName "LG3D"
             })
