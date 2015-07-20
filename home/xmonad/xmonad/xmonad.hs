@@ -14,6 +14,7 @@ import XMonad.Util.NamedScratchpad
 import XMonad.Layout.Grid
 import XMonad.Layout.NoBorders
 import XMonad.Hooks.SetWMName
+import XMonad.Hooks.EwmhDesktops
 import Data.Time
 
 
@@ -28,7 +29,7 @@ myTopicConfig = defaultTopicConfig
     { defaultTopicAction = const (return ())
     , defaultTopic = "main"
     , topicActions = M.fromList $
-        [ ("browser", spawnHere "google-chrome-stable")
+        [ ("browser", spawnHere "google-chrome")
         ]
     }
 
@@ -39,7 +40,8 @@ scratchpads =
     , NS "sage" "xterm -T sc-sage sage" (title =? "sc-sage") defaultFloating
     , NS "ipython2" "xterm -T sc-ipython2 ipython2" (title =? "sc-ipython2") defaultFloating
     , NS "ydcv" "xterm -T sc-ydcv ydcv" (title =? "sc-ydcv") defaultFloating
-    , NS "terminal" "konsole --profile KSPad" (title =? "KSPad") defaultFloating
+{-    , NS "terminal" "konsole --profile KSPad" (title =? "KSPad") defaultFloating -}
+    , NS "terminal" "xterm -T sc-sh sh" (title =? "sc-sh") defaultFloating
     ]
 
 
@@ -68,24 +70,24 @@ myKeys = \c -> mkKeymap c $
     , ("M-; x", namedScratchpadAction scratchpads "terminal")
     , ("M-; p", namedScratchpadAction scratchpads "ipython2")
     , ("M-<Space>", sendMessage NextLayout)
-    , ("<Print>", spawnHere "sleep 0.1; scrot -s -e 'mkdir -p /tmp/scrot/; mv $f /tmp/scrot/'")
-    , ("S-<Print>", spawnHere "scrot -e 'mkdir -p /tmp/scrot/; mv $f /tmp/scrot/'")
+    , ("<Print>", spawnHere "bash -c 'mkdir /tmp/scrot; killall shutter; shutter -s &'")
     , ("M--", sendMessage Shrink)
     , ("M-=", sendMessage Expand)
     , ("M-c", spawnHere "xclip -selection primary -o | xclip -selection clipboard -i")
     , ("M-v", spawnHere "sleep 0.5; xdotool type \"$(xclip -selection clipboard -o)\"")
+    , ("<Henkan>", spawnHere "notify-send asdf")
     ]
 
 myManageHook = composeAll $ [manageDocks
                             ,namedScratchpadManageHook scratchpads
-                            ,isFullscreen --> doFullFloat
                             ,role =? "popup" --> doFloat
+                            ,name =? "Shutter" --> doFloat
                             ]
                 where [role, name] = [stringProperty "WM_WINDOW_ROLE", stringProperty "WM_NAME"]
 
 main = do
     xmonad =<< statusBar "xmobar" defaultPP toggleStrutsKey (
-            defaultConfig
+            ewmh defaultConfig
             { terminal = "konsole"
             , modMask = mod4Mask
             , borderWidth = 2
@@ -93,5 +95,9 @@ main = do
             , keys = myKeys
             , layoutHook = smartBorders $ avoidStruts $ layoutHook defaultConfig
             , manageHook = myManageHook
+            , handleEventHook = handleEventHook defaultConfig <+> fullscreenEventHook
             , startupHook = setWMName "LG3D"
-            })
+            } `additionalKeys` 
+            [ ((0, 65315), spawnHere "google-chrome") {- 65315 -- Henkan_Mode -}
+            , ((0, 65322), spawnHere "bash -c 'find ~/Videos/Anime/OPEDs/ -xtype f > ~/Videos/Anime/playlist; (ps aux | grep -v grep | grep xwinwrap) && killall xwinwrap || xwinwrap -ov -fs -ni -- /bin/mpv -playlist ~/Videos/Anime/playlist -loop=inf -shuffle -wid WID'") {- 65322 -- Kanji -}
+            ])
