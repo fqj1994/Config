@@ -71,11 +71,11 @@ myKeys = \c -> mkKeymap c $
     , ("M-; p", namedScratchpadAction scratchpads "ipython2")
     , ("M-<Space>", sendMessage NextLayout)
     , ("<Print>", spawnHere "bash -c 'mkdir /tmp/scrot; killall shutter; shutter -s &'")
+    , ("M-<Print>", spawnHere "bash -c 'mkdir /tmp/scrot; killall shutter; shutter -f &'")
     , ("M--", sendMessage Shrink)
     , ("M-=", sendMessage Expand)
     , ("M-c", spawnHere "xclip -selection primary -o | xclip -selection clipboard -i")
     , ("M-v", spawnHere "sleep 0.5; xdotool type \"$(xclip -selection clipboard -o)\"")
-    , ("<Henkan>", spawnHere "notify-send asdf")
     ]
 
 myManageHook = composeAll $ [manageDocks
@@ -99,5 +99,6 @@ main = do
             , startupHook = setWMName "LG3D"
             } `additionalKeys` 
             [ ((0, 65315), spawnHere "google-chrome") {- 65315 -- Henkan_Mode -}
-            , ((0, 65322), spawnHere "bash -c 'find ~/Videos/Anime/OPEDs/ -xtype f > ~/Videos/Anime/playlist; (ps aux | grep -v grep | grep xwinwrap) && killall xwinwrap || xwinwrap -ov -fs -ni -- /bin/mpv -playlist ~/Videos/Anime/playlist -loop=inf -shuffle -wid WID'") {- 65322 -- Kanji -}
+            , ((0, 65322), spawnHere "bash -c 'find ~/Videos/Anime/OPEDs/ -xtype f > ~/Videos/Anime/playlist; (ps aux | grep -v grep | grep xwinwrap) && killall xwinwrap || xwinwrap -ov -fs -ni -- /bin/mpv -playlist ~/Videos/Anime/playlist -loop=inf -shuffle -wid WID --input-unix-socket=/tmp/bgvideo.sock'") {- 65322 -- Kanji -}
+            , ((shiftMask, 65322), spawnHere "echo '{\"command\":[\"playlist_next\"]}' | socat - /tmp/bgvideo.sock") {- 65322 -- Kanji -}
             ])
