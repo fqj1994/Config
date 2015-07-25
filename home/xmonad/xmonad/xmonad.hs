@@ -11,14 +11,18 @@ import XMonad.Prompt
 import XMonad.Prompt.Window
 import XMonad.Actions.Navigation2D
 import XMonad.Util.NamedScratchpad
-import XMonad.Layout.Grid
+import XMonad.Layout.Mosaic
+import XMonad.Layout.ResizableTile
+import XMonad.Layout.PerWorkspace
 import XMonad.Layout.NoBorders
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.EwmhDesktops
+import XMonad.Hooks.FadeWindows
 import Data.Time
 
 
--- myLayout = Tall ||| Full ||| Mirror Tall;
+myLayout = onWorkspace "browser" (noBorders Full) $  withBorder 2 tiled ||| withBorder 2 (Mirror tiled) ||| noBorders Full ||| withBorder 2 (mosaic 2 [])
+            where tiled = ResizableTall 1 (3/100) (1/2) [];
 
 
 
@@ -29,7 +33,7 @@ myTopicConfig = defaultTopicConfig
     { defaultTopicAction = const (return ())
     , defaultTopic = "main"
     , topicActions = M.fromList $
-        [ ("browser", spawnHere "google-chrome")
+        [ ("browser", spawnHere "chromium")
         ]
     }
 
@@ -73,32 +77,39 @@ myKeys = \c -> mkKeymap c $
     , ("<Print>", spawnHere "bash -c 'mkdir /tmp/scrot; killall shutter; shutter -s &'")
     , ("M-<Print>", spawnHere "bash -c 'mkdir /tmp/scrot; killall shutter; shutter -f &'")
     , ("M--", sendMessage Shrink)
-    , ("M-=", sendMessage Expand)
+    , ("M-^", sendMessage Expand)
     , ("M-c", spawnHere "xclip -selection primary -o | xclip -selection clipboard -i")
     , ("M-v", spawnHere "sleep 0.5; xdotool type \"$(xclip -selection clipboard -o)\"")
     ]
 
-myManageHook = composeAll $ [manageDocks
-                            ,namedScratchpadManageHook scratchpads
-                            ,role =? "popup" --> doFloat
-                            ,name =? "Shutter" --> doFloat
+myManageHook = composeAll $ [ manageDocks
+                            , namedScratchpadManageHook scratchpads
+                            , role =? "popup" --> doFloat
+                            , name =? "Shutter" --> doFloat
                             ]
                 where [role, name] = [stringProperty "WM_WINDOW_ROLE", stringProperty "WM_NAME"]
 
+myFadeHook = composeAll [ role =? "browser" --> transparency 0.2
+                        , opaque
+                        ] 
+                where [role, name, classname] = [stringProperty "WM_WINDOW_ROLE", stringProperty "WM_NAME", stringProperty "WM_CLASS"]
+
 main = do
-    xmonad =<< statusBar "xmobar" defaultPP toggleStrutsKey (
+    xmonad =<< statusBar "/home/fqj1994/.local/bin/xmobar-write" defaultPP toggleStrutsKey (
             ewmh defaultConfig
             { terminal = "konsole"
             , modMask = mod4Mask
-            , borderWidth = 2
+            , focusFollowsMouse = False
+            , borderWidth = 0
             , workspaces = myWorkspaces
             , keys = myKeys
-            , layoutHook = smartBorders $ avoidStruts $ layoutHook defaultConfig
+            , layoutHook = avoidStruts $ layoutHook defaultConfig  {layoutHook = myLayout}
             , manageHook = myManageHook
-            , handleEventHook = handleEventHook defaultConfig <+> fullscreenEventHook
+            , logHook = fadeWindowsLogHook myFadeHook
+            , handleEventHook = handleEventHook defaultConfig <+> fullscreenEventHook <+> fadeWindowsEventHook
             , startupHook = setWMName "LG3D"
             } `additionalKeys` 
-            [ ((0, 65315), spawnHere "google-chrome") {- 65315 -- Henkan_Mode -}
+            [ ((0, 65315), spawnHere "chromimum") {- 65315 -- Henkan_Mode -}
             , ((0, 65322), spawnHere "bash -c 'find ~/Videos/Anime/OPEDs/ -xtype f > ~/Videos/Anime/playlist; (ps aux | grep -v grep | grep xwinwrap) && killall xwinwrap || xwinwrap -ov -fs -ni -- /bin/mpv -playlist ~/Videos/Anime/playlist -loop=inf -shuffle -wid WID --input-unix-socket=/tmp/bgvideo.sock'") {- 65322 -- Kanji -}
             , ((shiftMask, 65322), spawnHere "echo '{\"command\":[\"playlist_next\"]}' | socat - /tmp/bgvideo.sock") {- 65322 -- Kanji -}
             ])
