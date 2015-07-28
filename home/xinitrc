@@ -1,0 +1,15 @@
+export PATH=$HOME/.local/bin:$PATH
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+compton &
+fcitx &
+mkfifo /tmp/xmobar-pipe
+exec 3<>/tmp/xmobar-pipe
+xmobar < /tmp/xmobar-pipe &
+trayer --SetDockType true --SetPartialStrut true --height 2 &
+#pulseaudio --start -v --log-target=file:/tmp/pulse.log
+start-pulseaudio-x11
+xrdb -merge /home/fqj1994/.Xresources
+setxkbmap jp
+xmonad
