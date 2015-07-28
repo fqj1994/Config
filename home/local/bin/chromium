@@ -1,0 +1,2 @@
+#!/bin/bash
+/bin/chromium --force-device-scale-factor=1.8 --ppapi-flash-args="enable_hw_video_decode=1,enable_stagevideo_auto=1" $@ 

@@ -1,0 +1,11 @@
+#!/bin/bash
+LASTCHAR=$(echo "$1" | sed -e 's/.*\(.\)$/\1/g')
+if [[ "$LASTCHAR" == "@" ]]; then
+    SERVICES=$(systemctl | grep "^  $1" | awk '{print $1}')
+else
+    SERVICES="$1"
+fi
+for i in $SERVICES; do
+    echo Restarting $i
+    sudo systemctl restart $i
+done

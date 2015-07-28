@@ -1,0 +1,5 @@
+#!/bin/zsh
+while true; do
+    read P || break
+    print -r -- $P > /tmp/xmobar-pipe
+done

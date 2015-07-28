@@ -1,0 +1,9 @@
+#!/bin/bash -e
+cat "$1" >/dev/null
+METHOD=$(cat "$1" | jq -r ".method")
+PASSWORD=$(cat "$1" | jq -r ".password")
+SERVER=$(cat "$1" | jq -r ".server")
+SERVERPORT=$(cat "$1" | jq -r ".server_port")
+ADDR="$METHOD:$PASSWORD@$SERVER:$SERVERPORT"
+ENCODED=$(echo -n "$ADDR" | base64)
+echo "$ENCODED" | python2 -c 'import pyqrcode; print pyqrcode.create("ss://" + raw_input().strip()).terminal()'

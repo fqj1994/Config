@@ -1,0 +1,2 @@
+#!/bin/bash
+xwinwrap -ov -fs -ni -- /bin/mpv -wid WID "$@"
