@@ -2,6 +2,7 @@ export PATH=$HOME/.local/bin:$PATH
 export GTK_IM_MODULE=fcitx
 export QT_IM_MODULE=fcitx
 export XMODIFIERS=@im=fcitx
+setxkbmap jp
 compton &
 fcitx &
 mkfifo /tmp/xmobar-pipe
@@ -11,5 +12,5 @@ trayer --SetDockType true --SetPartialStrut true --height 2 &
 #pulseaudio --start -v --log-target=file:/tmp/pulse.log
 start-pulseaudio-x11
 xrdb -merge /home/fqj1994/.Xresources
-setxkbmap jp
+rofi -key-window Mod4-g -key-run Mod4-r &
 xmonad

@@ -17,7 +17,6 @@ import XMonad.Layout.PerWorkspace
 import XMonad.Layout.NoBorders
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.EwmhDesktops
-import XMonad.Hooks.FadeWindows
 import Data.Time
 
 
@@ -55,8 +54,8 @@ myKeys = \c -> mkKeymap c $
             (f, m) <- [ (switchTopic myTopicConfig, ""), (windows . W.shift, "S-")]
     ] ++ 
     [ ("M-<Return>", spawnHere $ XMonad.terminal c)
-    , ("M-r", shellPromptHere defaultXPConfig)
-    , ("M-g", windowPromptGoto defaultXPConfig)
+{-    , ("M-r", shellPromptHere defaultXPConfig)  -}
+{-    , ("M-g", windowPromptGoto defaultXPConfig) -}
     , ("M-S-g", windowPromptBring defaultXPConfig)
     , ("M-t", withFocused $ windows . W.sink)
     , ("M-q", kill)
@@ -89,27 +88,23 @@ myManageHook = composeAll $ [ manageDocks
                             ]
                 where [role, name] = [stringProperty "WM_WINDOW_ROLE", stringProperty "WM_NAME"]
 
-myFadeHook = composeAll [ role =? "browser" --> transparency 0.2
-                        , opaque
-                        ] 
-                where [role, name, classname] = [stringProperty "WM_WINDOW_ROLE", stringProperty "WM_NAME", stringProperty "WM_CLASS"]
+conf = ewmh defaultConfig
+    { terminal = "konsole"
+    , modMask = mod4Mask
+    , focusFollowsMouse = False
+    , borderWidth = 0
+    , workspaces = myWorkspaces
+    , keys = myKeys
+    , layoutHook = avoidStruts $ layoutHook defaultConfig  {layoutHook = myLayout}
+    , manageHook = myManageHook
+    , handleEventHook = handleEventHook defaultConfig <+> fullscreenEventHook
+    } `additionalKeys`
+    [ ((0, 65315), spawnHere "chromium") {- 65315 -- Henkan_Mode -}
+    , ((0, 65322), spawnHere "bash -c 'find ~/Videos/Anime/OPEDs/ -xtype f > ~/Videos/Anime/playlist; (ps aux | grep -v grep | grep xwinwrap) && killall xwinwrap || xwinwrap -ov -fs -ni -- /bin/mpv -playlist ~/Videos/Anime/playlist -loop=inf -shuffle -wid WID --input-unix-socket=/tmp/bgvideo.sock --af=drc=1'") {- 65322 -- Kanji -}
+    , ((shiftMask, 65322), spawnHere "echo '{\"command\":[\"playlist_next\"]}' | socat - /tmp/bgvideo.sock") {- 65322 -- Kanji -}
+    ]
 
 main = do
     xmonad =<< statusBar "/home/fqj1994/.local/bin/xmobar-write" defaultPP toggleStrutsKey (
-            ewmh defaultConfig
-            { terminal = "konsole"
-            , modMask = mod4Mask
-            , focusFollowsMouse = False
-            , borderWidth = 0
-            , workspaces = myWorkspaces
-            , keys = myKeys
-            , layoutHook = avoidStruts $ layoutHook defaultConfig  {layoutHook = myLayout}
-            , manageHook = myManageHook
-            , logHook = fadeWindowsLogHook myFadeHook
-            , handleEventHook = handleEventHook defaultConfig <+> fullscreenEventHook <+> fadeWindowsEventHook
-            , startupHook = setWMName "LG3D"
-            } `additionalKeys` 
-            [ ((0, 65315), spawnHere "chromimum") {- 65315 -- Henkan_Mode -}
-            , ((0, 65322), spawnHere "bash -c 'find ~/Videos/Anime/OPEDs/ -xtype f > ~/Videos/Anime/playlist; (ps aux | grep -v grep | grep xwinwrap) && killall xwinwrap || xwinwrap -ov -fs -ni -- /bin/mpv -playlist ~/Videos/Anime/playlist -loop=inf -shuffle -wid WID --input-unix-socket=/tmp/bgvideo.sock'") {- 65322 -- Kanji -}
-            , ((shiftMask, 65322), spawnHere "echo '{\"command\":[\"playlist_next\"]}' | socat - /tmp/bgvideo.sock") {- 65322 -- Kanji -}
-            ])
+        conf { startupHook = startupHook conf >> setWMName "LG3D" }
+            )
