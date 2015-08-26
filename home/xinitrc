@@ -6,11 +6,15 @@ setxkbmap jp
 compton &
 fcitx &
 mkfifo /tmp/xmobar-pipe
+mkfifo /tmp/xmobar-info
 exec 3<>/tmp/xmobar-pipe
+exec 4<>/tmp/xmobar-info
 xmobar < /tmp/xmobar-pipe &
 trayer --SetDockType true --SetPartialStrut true --height 2 &
 #pulseaudio --start -v --log-target=file:/tmp/pulse.log
 start-pulseaudio-x11
 xrdb -merge /home/fqj1994/.Xresources
 rofi -key-window Mod4-g -key-run Mod4-r &
+xscreensaver -nosplash &
+(sleep 1; echo > /tmp/xmobar-info) &
 xmonad

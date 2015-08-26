@@ -1,9 +1,10 @@
-Config { font = "xft:Dejavu Sans:size=8,Source Han Sans TC:size=8"
+Config { font = "xft:Dejavu Sans:size=10,Source Han Sans TC:size=10"
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader% | %sound% | %bat% | %backlight% }{  %date%"
+       , template = "%StdinReader% | %sound% | %bat% | %backlight% | %extrainfo% }{  %date%"
        , commands = [ Run Date "%a %_d %b %I:%M %p" "date" 10
                     , Run StdinReader
+                    , Run PipeReader "/tmp/xmobar-info" "extrainfo"
                     , Run Com "/bin/bash" ["-c", "ponymix | grep Volume | head -n 1 | cut -d: -f2 | sed -e 's/ //g'"] "sound" 10
                     , Run Com "/bin/bash" ["-c", "acpi | sed -e 's/.*: //g'"] "bat" 100
                     , Run Com "/bin/bash" ["-c", "xbacklight | sed -e 's/\\..*//g'"] "backlight" 10

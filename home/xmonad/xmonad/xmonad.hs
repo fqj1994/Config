@@ -1,3 +1,4 @@
+import Control.Monad
 import XMonad
 import qualified Data.Map as M
 import qualified XMonad.StackSet as W
@@ -20,7 +21,14 @@ import XMonad.Hooks.EwmhDesktops
 import Data.Time
 
 
-myLayout = onWorkspace "browser" (noBorders Full) $  withBorder 2 tiled ||| withBorder 2 (Mirror tiled) ||| noBorders Full ||| withBorder 2 (mosaic 2 [])
+nongreedySwitchTopic :: TopicConfig -> Topic -> X ()
+nongreedySwitchTopic tg topic = do
+  windows $ W.view topic
+  wins <- gets (W.integrate' . W.stack . W.workspace . W.current . windowset)
+  when (null wins) $ XMonad.Actions.TopicSpace.topicAction tg topic
+
+
+myLayout = onWorkspace "browser" (noBorders Full) $  (smartBorders $ withBorder 2 tiled) ||| (smartBorders $ withBorder 2 (Mirror tiled)) ||| noBorders Full ||| (smartBorders $ withBorder  2 (mosaic 2 []))
             where tiled = ResizableTall 1 (3/100) (1/2) [];
 
 
@@ -43,15 +51,15 @@ scratchpads =
     , NS "sage" "xterm -T sc-sage sage" (title =? "sc-sage") defaultFloating
     , NS "ipython2" "xterm -T sc-ipython2 ipython2" (title =? "sc-ipython2") defaultFloating
     , NS "ydcv" "xterm -T sc-ydcv ydcv" (title =? "sc-ydcv") defaultFloating
-{-    , NS "terminal" "konsole --profile KSPad" (title =? "KSPad") defaultFloating -}
-    , NS "terminal" "xterm -T sc-sh sh" (title =? "sc-sh") defaultFloating
+    , NS "terminal" "konsole --profile KSPad" (title =? "KSPad") defaultFloating
+{-    , NS "terminal" "xterm -T sc-sh sh" (title =? "sc-sh") defaultFloating -}
     ]
 
 
 myKeys = \c -> mkKeymap c $
     [ ("M-" ++ m ++ [k], f i) | 
             (i, k) <- zip myWorkspaces "1234567890", 
-            (f, m) <- [ (switchTopic myTopicConfig, ""), (windows . W.shift, "S-")]
+            (f, m) <- [ (nongreedySwitchTopic myTopicConfig, ""), (windows . W.shift, "S-")]
     ] ++ 
     [ ("M-<Return>", spawnHere $ XMonad.terminal c)
 {-    , ("M-r", shellPromptHere defaultXPConfig)  -}
@@ -79,6 +87,7 @@ myKeys = \c -> mkKeymap c $
     , ("M-^", sendMessage Expand)
     , ("M-c", spawnHere "xclip -selection primary -o | xclip -selection clipboard -i")
     , ("M-v", spawnHere "sleep 0.5; xdotool type \"$(xclip -selection clipboard -o)\"")
+    , ("M-S-l", spawnHere "xscreensaver-command -lock")
     ]
 
 myManageHook = composeAll $ [ manageDocks
